@@ -2,6 +2,8 @@
 
 面向课程与日常练习整理的**好用、常用**清单，便于检索与跳转；**大模型对话与多模态生成**靠前，其余按场景分组。
 
+**线上站点（自定义域名）：** https://tools.jumpxai.com — 在 Cloudflare Pages 项目 `awesome-ai-tools` 的 Custom domains 中绑定该主机名后生效。
+
 ## 常用大模型对话
 
 - [ChatGPT](https://chatgpt.com/) - OpenAI，通用对话、写作与插件生态

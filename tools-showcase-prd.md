@@ -33,8 +33,8 @@
 
 ### 部署与发布（组织标准 vs 原文 PRD）
 
-- 原文 PRD 以 **GitHub Pages** 为优先表述；**JumpX 实战营课件发布** 推荐按组织 Skill 使用 **GitHub（如 `JumpX-Labs/*`）+ Cloudflare Pages + GitHub Actions（`wrangler-action@v3`）+ `jumpxai.com` 子域名**，Secrets 使用 **Cloudflare Dashboard 创建的 API Token**（勿用 `wrangler login` 的 OAuth Token）。
-- 本仓库可按同一 Skill 完成「建库—推代码—配 Pages—绑域名—注 Secrets」；具体子域名与 Demo 编号由课程运营确定。
+- 原文 PRD 以 **GitHub Pages** 为优先表述；**JumpX 实战营课件发布** 推荐按组织 Skill 使用 **GitHub（如 `JumpX-Labs/*`）+ Cloudflare Pages + GitHub Actions（`wrangler-action@v3`）**；本仓库生产访问域名为 **`https://tools.jumpxai.com`**（在 Cloudflare Pages 项目 `awesome-ai-tools` → Custom domains 中绑定）。Secrets 使用 **Cloudflare Dashboard 创建的 API Token**（勿用 `wrangler login` 的 OAuth Token）。
+- 本仓库可按同一 Skill 完成「建库—推代码—配 Pages—绑域名—注 Secrets」；`jumpxai.com` 托管在 Cloudflare 时，绑定 `tools.jumpxai.com` 后 DNS 通常由系统自动下发，无需在 DNS 面板手写 CNAME（以 Dashboard 提示为准）。
 
 ### 与后文原始章节的差异（可课堂讨论）
 
