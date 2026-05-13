@@ -84,12 +84,159 @@ body {
   flex-direction: column;
 }
 
-.jx-sticky {
-  position: sticky;
-  top: 0;
-  z-index: 40;
+/* Hero header — in document flow, scrolls away with the page */
+.jx-hero {
+  position: relative;
   background: var(--jx-bg);
   border-bottom: 2px solid var(--jx-line);
+}
+
+.jx-sticky-sentinel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 1px;
+  width: 100%;
+  pointer-events: none;
+}
+
+/* Compact sticky bar — fixed, slides in once hero scrolls out */
+.jx-stickybar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: var(--jx-bg);
+  border-bottom: 2px solid var(--jx-line);
+  transform: translateY(-100%);
+  transition: transform 0.18s ease;
+  will-change: transform;
+}
+
+.jx-stickybar[data-visible="true"] {
+  transform: translateY(0);
+}
+
+.jx-stickybar-inner {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 1.5rem;
+}
+
+.jx-stickybar .jx-search-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Category trigger button (sticky bar) */
+.jx-cat-trigger {
+  cursor: pointer;
+  border: 2px solid var(--jx-line);
+  background: var(--jx-surface);
+  color: var(--jx-text);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.45rem 0.7rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  box-shadow: 2px 2px 0 0 var(--jx-shadow-color);
+  white-space: nowrap;
+  max-width: 240px;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
+}
+
+.jx-cat-trigger:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 0 var(--jx-shadow-color);
+}
+
+.jx-cat-trigger[aria-expanded="true"] {
+  background: var(--jx-accent);
+  color: #000;
+}
+
+.jx-cat-trigger-label {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.jx-cat-trigger-arrow {
+  font-size: 0.72rem;
+  opacity: 0.75;
+}
+
+/* Category popover under sticky bar */
+.jx-cat-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--jx-bg);
+  border-bottom: 2px solid var(--jx-line);
+  max-height: 70vh;
+  overflow-y: auto;
+  box-shadow: 0 6px 0 0 var(--jx-shadow-color);
+}
+
+.jx-cat-menu-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.85rem 1.5rem 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.45rem;
+}
+
+.jx-cat-item {
+  cursor: pointer;
+  border: 2px solid var(--jx-line);
+  background: var(--jx-surface);
+  color: var(--jx-text);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.42rem 0.6rem;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  box-shadow: 2px 2px 0 0 var(--jx-shadow-color);
+  text-align: left;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
+}
+
+.jx-cat-item:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 0 var(--jx-shadow-color);
+}
+
+.jx-cat-item[data-active="true"] {
+  background: var(--jx-accent);
+  color: #000;
+}
+
+.jx-cat-item > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Compact logo for sticky bar */
+.jx-logo--sm {
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  padding: 0.28rem 0.5rem;
 }
 
 .jx-inner {
@@ -221,6 +368,22 @@ body {
   box-shadow: 4px 4px 0 0 var(--jx-accent);
 }
 
+.jx-search--sm {
+  padding: 0.5rem 0.7rem 0.5rem 2.2rem;
+  font-size: 0.9rem;
+  box-shadow: 2px 2px 0 0 var(--jx-shadow-color);
+}
+
+.jx-search--sm:focus {
+  box-shadow: 2px 2px 0 0 var(--jx-accent);
+}
+
+.jx-search-wrap--sm svg {
+  left: 0.7rem;
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
 .jx-hint {
   margin-top: 0.55rem;
   font-size: 0.7rem;
@@ -324,7 +487,7 @@ body {
 /* category section (ALL view) */
 .jx-section {
   margin-top: 2rem;
-  scroll-margin-top: 280px;
+  scroll-margin-top: 88px;
 }
 
 .jx-section:first-of-type {
@@ -476,6 +639,13 @@ body {
   box-shadow: 1px 1px 0 0 var(--jx-shadow-color);
 }
 
+.jx-icon-btn--sm {
+  width: 2rem;
+  height: 2rem;
+  font-size: 0.85rem;
+  box-shadow: 2px 2px 0 0 var(--jx-shadow-color);
+}
+
 /* empty / error */
 .jx-empty {
   text-align: center;
@@ -530,6 +700,23 @@ body {
   font-size: 0.62rem;
 }
 
+@media (max-width: 640px) {
+  .jx-stickybar-inner {
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+  }
+  .jx-logo--sm {
+    display: none;
+  }
+  .jx-cat-trigger {
+    max-width: 150px;
+    padding: 0.4rem 0.55rem;
+  }
+  .jx-cat-trigger-label {
+    max-width: 90px;
+  }
+}
+
 @media (max-width: 540px) {
   .jx-inner {
     padding: 1rem 1rem 1.25rem;
@@ -539,6 +726,10 @@ body {
   }
   .jx-grid {
     grid-template-columns: 1fr;
+  }
+  .jx-cat-menu-inner {
+    grid-template-columns: 1fr 1fr;
+    padding: 0.75rem 1rem 0.9rem;
   }
   body {
     background-size: 24px 24px;

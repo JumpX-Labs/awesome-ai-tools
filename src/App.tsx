@@ -28,9 +28,23 @@ function isTypingField(el: Element | null): boolean {
   return false;
 }
 
+function isSearchField(el: Element | null): boolean {
+  return el instanceof HTMLElement && el.dataset.jxSearch === "true";
+}
+
 function pad(n: number, width = 3): string {
   return n.toString().padStart(width, "0");
 }
+
+const SEARCH_ICON = (
+  <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+    <path
+      fillRule="evenodd"
+      d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z"
+      clipRule="evenodd"
+    />
+  </svg>
+);
 
 function ToolCard({
   tool,
@@ -63,7 +77,14 @@ export default function App() {
   const [categoryId, setCategoryId] = useState<string>(ALL_CATEGORY_ID);
   const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const searchRef = useRef<HTMLInputElement>(null);
+  const [isStuck, setIsStuck] = useState(false);
+  const [catMenuOpen, setCatMenuOpen] = useState(false);
+
+  const heroSearchRef = useRef<HTMLInputElement>(null);
+  const stickySearchRef = useRef<HTMLInputElement>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const catMenuRef = useRef<HTMLDivElement>(null);
+  const catTriggerRef = useRef<HTMLButtonElement>(null);
   const filteredRef = useRef<FlatTool[]>([]);
 
   useEffect(() => {
@@ -133,23 +154,58 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => setIsStuck(!entry.isIntersecting && entry.boundingClientRect.top < 0),
+      { threshold: 0 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [payload]);
+
+  useEffect(() => {
+    if (!isStuck) setCatMenuOpen(false);
+  }, [isStuck]);
+
+  useEffect(() => {
+    if (!catMenuOpen) return;
+    const onDocClick = (ev: MouseEvent) => {
+      const target = ev.target as Node;
+      if (catMenuRef.current?.contains(target)) return;
+      if (catTriggerRef.current?.contains(target)) return;
+      setCatMenuOpen(false);
+    };
+    const onKey = (ev: KeyboardEvent) => {
+      if (ev.key === "Escape") setCatMenuOpen(false);
+    };
+    document.addEventListener("mousedown", onDocClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [catMenuOpen]);
+
+  useEffect(() => {
     const onKey = (ev: KeyboardEvent) => {
       if (ev.key === "/" && !ev.ctrlKey && !ev.metaKey && !ev.altKey) {
         if (!isTypingField(document.activeElement)) {
           ev.preventDefault();
-          searchRef.current?.focus();
+          const target = isStuck ? stickySearchRef.current : heroSearchRef.current;
+          target?.focus();
         }
       }
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, []);
+  }, [isStuck]);
 
   useEffect(() => {
     const onEnter = (ev: KeyboardEvent) => {
       if (ev.key !== "Enter") return;
       const active = document.activeElement;
-      const searchFocused = active?.id === "jx-search";
+      const searchFocused = isSearchField(active);
       const q = searchQuery.trim();
       if (!searchFocused && !q) return;
       if (isTypingField(active) && !searchFocused) return;
@@ -209,9 +265,92 @@ export default function App() {
   const activeCategoryLabel = categoryId === ALL_CATEGORY_ID ? "ALL" : categoryId;
   const themeLabel = themeMode === "light" ? "L" : themeMode === "dark" ? "D" : "S";
 
+  const onSearchChange = (v: string) => {
+    setSearchInput(v);
+    setSearchQuery(v);
+  };
+
   return (
     <div className="jx-shell">
-      <header className="jx-sticky">
+      <div className="jx-stickybar" data-visible={isStuck}>
+        <div className="jx-stickybar-inner">
+          <span className="jx-logo jx-logo--sm" aria-label="JumpX">
+            <span className="jx-logo-dot" />
+            JumpX
+          </span>
+          <div className="jx-search-wrap jx-search-wrap--sm">
+            {SEARCH_ICON}
+            <input
+              ref={stickySearchRef}
+              data-jx-search="true"
+              className="jx-search jx-search--sm"
+              type="search"
+              autoComplete="off"
+              placeholder="QUERY / 工具…"
+              value={searchInput}
+              onChange={(e) => onSearchChange(e.target.value)}
+            />
+          </div>
+          <button
+            ref={catTriggerRef}
+            type="button"
+            className="jx-cat-trigger"
+            aria-haspopup="true"
+            aria-expanded={catMenuOpen}
+            onClick={() => setCatMenuOpen((v) => !v)}
+            title="切换分类"
+          >
+            <span className="jx-cat-trigger-label">/{activeCategoryLabel}</span>
+            <span className="jx-cat-trigger-arrow" aria-hidden>
+              ▾
+            </span>
+          </button>
+          <button
+            type="button"
+            className="jx-icon-btn jx-icon-btn--sm"
+            onClick={cycleTheme}
+            title={`主题：${themeMode === "light" ? "浅色" : themeMode === "dark" ? "深色" : "跟随系统"}`}
+            aria-label="切换浅色 / 深色 / 跟随系统"
+          >
+            {themeLabel}
+          </button>
+        </div>
+        {catMenuOpen ? (
+          <div className="jx-cat-menu" ref={catMenuRef} role="listbox" aria-label="分类">
+            <div className="jx-cat-menu-inner">
+              <button
+                type="button"
+                className="jx-cat-item"
+                data-active={categoryId === ALL_CATEGORY_ID}
+                onClick={() => {
+                  setCategoryId(ALL_CATEGORY_ID);
+                  setCatMenuOpen(false);
+                }}
+              >
+                <span>ALL</span>
+                <span className="jx-tab-count">{totalCount}</span>
+              </button>
+              {categoryEntries.map((c) => (
+                <button
+                  key={c.name}
+                  type="button"
+                  className="jx-cat-item"
+                  data-active={categoryId === c.name}
+                  onClick={() => {
+                    setCategoryId(c.name);
+                    setCatMenuOpen(false);
+                  }}
+                >
+                  <span>{c.name}</span>
+                  <span className="jx-tab-count">{c.count}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </div>
+
+      <header className="jx-hero">
         <div className="jx-inner">
           <div className="jx-brand">
             <div className="jx-brand-left">
@@ -241,29 +380,20 @@ export default function App() {
             <span className="eyebrow">/{activeCategoryLabel}</span>
           </div>
           <div className="jx-search-wrap">
-            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden>
-              <path
-                fillRule="evenodd"
-                d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z"
-                clipRule="evenodd"
-              />
-            </svg>
+            {SEARCH_ICON}
             <input
-              ref={searchRef}
+              ref={heroSearchRef}
+              data-jx-search="true"
               id="jx-search"
               className="jx-search"
               type="search"
               autoComplete="off"
               placeholder="QUERY / 工具、描述、链接、拼音…"
               value={searchInput}
-              onChange={(e) => {
-                const v = e.target.value;
-                setSearchInput(v);
-                setSearchQuery(v);
-              }}
+              onChange={(e) => onSearchChange(e.target.value)}
             />
             <p className="jx-hint">
-              <kbd>/</kbd> 聚焦 · <kbd>Enter</kbd> 打开首条结果
+              <kbd>/</kbd> 聚焦 · <kbd>Enter</kbd> 打开首条结果 · 向下滚动后右上角分类菜单始终可用
             </p>
           </div>
 
@@ -294,6 +424,7 @@ export default function App() {
             ))}
           </div>
         </div>
+        <div ref={sentinelRef} className="jx-sticky-sentinel" aria-hidden />
       </header>
 
       <main className="jx-main">
