@@ -444,9 +444,47 @@ body {
   box-shadow: 2px 2px 0 0 var(--jx-shadow-color);
 }
 
+.jx-tab--my[data-active="false"],
+.jx-tab--my:not([data-active]) {
+  background: var(--jx-bg);
+  color: var(--jx-text);
+  border-style: dashed;
+}
+
+.jx-tab--my[data-active="true"] {
+  background: var(--jx-line);
+  color: var(--jx-bg);
+}
+
 .jx-tab-count {
   margin-left: 0.4rem;
   opacity: 0.6;
+}
+
+/* MY toggle in sticky bar */
+.jx-my-toggle {
+  cursor: pointer;
+  border: 2px solid var(--jx-line);
+  background: var(--jx-surface);
+  color: var(--jx-text);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.4rem 0.6rem;
+  box-shadow: 2px 2px 0 0 var(--jx-shadow-color);
+  white-space: nowrap;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
+}
+
+.jx-my-toggle:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 0 var(--jx-shadow-color);
+}
+
+.jx-my-toggle[data-active="true"] {
+  background: var(--jx-line);
+  color: var(--jx-bg);
 }
 
 /* main results bar */
@@ -601,7 +639,7 @@ body {
 .jx-index {
   position: absolute;
   top: -2px;
-  right: -2px;
+  left: -2px;
   font-family: "IBM Plex Mono", monospace;
   font-size: 0.62rem;
   background: var(--jx-accent);
@@ -609,6 +647,62 @@ body {
   padding: 0.12rem 0.4rem;
   border: 2px solid var(--jx-line);
   letter-spacing: 0.06em;
+}
+
+/* favorite mark — top-right of card */
+.jx-fav {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  cursor: pointer;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  padding: 0.18rem 0.46rem;
+  border: 2px solid var(--jx-line);
+  background: var(--jx-surface);
+  color: var(--jx-muted);
+  border-radius: 0;
+  z-index: 2;
+  opacity: 0.35;
+  transition: opacity 0.12s ease, transform 0.12s ease, background 0.12s ease,
+    color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.jx-card:hover .jx-fav,
+.jx-fav:focus-visible {
+  opacity: 1;
+}
+
+.jx-fav:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 2px 2px 0 0 var(--jx-shadow-color);
+}
+
+.jx-fav[data-status="using"] {
+  background: var(--jx-accent);
+  color: #000;
+  opacity: 1;
+}
+
+.jx-fav[data-status="wish"] {
+  background: var(--jx-line);
+  color: var(--jx-bg);
+  opacity: 1;
+}
+
+.jx-fav[data-status="using"]::before {
+  content: "■ ";
+}
+
+.jx-fav[data-status="wish"]::before {
+  content: "○ ";
+}
+
+.jx-fav[data-status="none"]::before {
+  content: "+ ";
+  opacity: 0.7;
 }
 
 /* theme toggle */
@@ -714,6 +808,10 @@ body {
   }
   .jx-cat-trigger-label {
     max-width: 90px;
+  }
+  .jx-my-toggle {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.65rem;
   }
 }
 

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { FlatTool, ToolsPayload } from "./types";
 import { ALL_CATEGORY_ID } from "./types";
 import { textMatchesQuery } from "./utils/matchSearch";
+import { useFavorites, type FavStatus } from "./hooks/useFavorites";
 
 const STORAGE_THEME = "jumpx-theme";
 
@@ -46,20 +47,52 @@ const SEARCH_ICON = (
   </svg>
 );
 
+const FAV_LABEL: Record<"none" | FavStatus, string> = {
+  none: "MARK",
+  using: "USING",
+  wish: "WISH",
+};
+
+const FAV_NEXT_HINT: Record<"none" | FavStatus, string> = {
+  none: "标记为「在用」",
+  using: "切换为「想用」",
+  wish: "取消标记",
+};
+
 function ToolCard({
   tool,
   index,
   showIndex,
   showCategoryMeta,
+  favStatus,
+  onToggleFav,
 }: {
   tool: FlatTool;
   index: number;
   showIndex: boolean;
   showCategoryMeta: boolean;
+  favStatus: FavStatus | null;
+  onToggleFav: (tool: FlatTool) => void;
 }) {
+  const statusKey = favStatus ?? "none";
+  const onFavClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onToggleFav(tool);
+  };
   return (
     <a className="jx-card" href={tool.url} target="_blank" rel="noopener noreferrer">
       {showIndex && index < 10 ? <span className="jx-index">{pad(index + 1, 2)}</span> : null}
+      <button
+        type="button"
+        className="jx-fav"
+        data-status={statusKey}
+        onClick={onFavClick}
+        title={`${statusKey === "none" ? "未标记" : statusKey === "using" ? "在用" : "想用"} · 点击${FAV_NEXT_HINT[statusKey]}`}
+        aria-label={`收藏状态：${FAV_LABEL[statusKey]}（${FAV_NEXT_HINT[statusKey]}）`}
+      >
+        {FAV_LABEL[statusKey]}
+      </button>
       <div className="jx-avatar">{(tool.name.trim().charAt(0) || "?").toUpperCase()}</div>
       <div className="jx-card-body">
         <h3 className="jx-card-title">{tool.name}</h3>
@@ -79,6 +112,8 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isStuck, setIsStuck] = useState(false);
   const [catMenuOpen, setCatMenuOpen] = useState(false);
+  const [myView, setMyView] = useState(false);
+  const { count: favCount, cycle: cycleFav, getStatus: getFavStatus } = useFavorites();
 
   const heroSearchRef = useRef<HTMLInputElement>(null);
   const stickySearchRef = useRef<HTMLInputElement>(null);
@@ -126,6 +161,9 @@ export default function App() {
   }, [payload]);
 
   const filtered: FlatTool[] = useMemo(() => {
+    if (myView) {
+      return flatTools.filter((t) => getFavStatus(t.url) !== null);
+    }
     const pool =
       categoryId === ALL_CATEGORY_ID
         ? flatTools
@@ -139,7 +177,7 @@ export default function App() {
         textMatchesQuery(t.url, q) ||
         textMatchesQuery(t.category, q),
     );
-  }, [flatTools, categoryId, searchQuery]);
+  }, [flatTools, categoryId, searchQuery, myView, getFavStatus]);
 
   useEffect(() => {
     filteredRef.current = filtered;
@@ -224,7 +262,8 @@ export default function App() {
   );
 
   const groupedFiltered = useMemo(() => {
-    if (!payload || categoryId !== ALL_CATEGORY_ID) return null;
+    if (!payload) return null;
+    if (!myView && categoryId !== ALL_CATEGORY_ID) return null;
     const byCategory = new Map<string, FlatTool[]>();
     for (const tool of filtered) {
       const list = byCategory.get(tool.category) ?? [];
@@ -234,7 +273,25 @@ export default function App() {
     return payload.categories
       .map((c) => ({ name: c.name, items: byCategory.get(c.name) ?? [] }))
       .filter((g) => g.items.length > 0);
-  }, [payload, filtered, categoryId]);
+  }, [payload, filtered, categoryId, myView]);
+
+  const toggleMyView = useCallback(() => {
+    setMyView((v) => {
+      const next = !v;
+      if (next) {
+        setCategoryId(ALL_CATEGORY_ID);
+        setSearchInput("");
+        setSearchQuery("");
+        setCatMenuOpen(false);
+      }
+      return next;
+    });
+  }, []);
+
+  const selectCategory = useCallback((id: string) => {
+    setCategoryId(id);
+    setMyView(false);
+  }, []);
 
   if (loadError) {
     return (
@@ -262,7 +319,11 @@ export default function App() {
   const showIndex = searchQuery.trim().length > 0;
   const totalCount = flatTools.length;
   const visibleCount = filtered.length;
-  const activeCategoryLabel = categoryId === ALL_CATEGORY_ID ? "ALL" : categoryId;
+  const activeCategoryLabel = myView
+    ? `MY (${favCount})`
+    : categoryId === ALL_CATEGORY_ID
+      ? "ALL"
+      : categoryId;
   const themeLabel = themeMode === "light" ? "L" : themeMode === "dark" ? "D" : "S";
 
   const onSearchChange = (v: string) => {
@@ -291,6 +352,16 @@ export default function App() {
               onChange={(e) => onSearchChange(e.target.value)}
             />
           </div>
+          <button
+            type="button"
+            className="jx-my-toggle"
+            data-active={myView}
+            onClick={toggleMyView}
+            title={myView ? "退出 MY 视图" : "查看我标记的工具"}
+            aria-pressed={myView}
+          >
+            ★ MY <span className="jx-tab-count">{favCount}</span>
+          </button>
           <button
             ref={catTriggerRef}
             type="button"
@@ -321,9 +392,9 @@ export default function App() {
               <button
                 type="button"
                 className="jx-cat-item"
-                data-active={categoryId === ALL_CATEGORY_ID}
+                data-active={!myView && categoryId === ALL_CATEGORY_ID}
                 onClick={() => {
-                  setCategoryId(ALL_CATEGORY_ID);
+                  selectCategory(ALL_CATEGORY_ID);
                   setCatMenuOpen(false);
                 }}
               >
@@ -335,9 +406,9 @@ export default function App() {
                   key={c.name}
                   type="button"
                   className="jx-cat-item"
-                  data-active={categoryId === c.name}
+                  data-active={!myView && categoryId === c.name}
                   onClick={() => {
-                    setCategoryId(c.name);
+                    selectCategory(c.name);
                     setCatMenuOpen(false);
                   }}
                 >
@@ -405,10 +476,20 @@ export default function App() {
               type="button"
               role="tab"
               className="jx-tab"
-              data-active={categoryId === ALL_CATEGORY_ID}
-              onClick={() => setCategoryId(ALL_CATEGORY_ID)}
+              data-active={!myView && categoryId === ALL_CATEGORY_ID}
+              onClick={() => selectCategory(ALL_CATEGORY_ID)}
             >
               ALL <span className="jx-tab-count">{totalCount}</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              className="jx-tab jx-tab--my"
+              data-active={myView}
+              onClick={toggleMyView}
+              title={myView ? "退出 MY 视图" : "只看我标记的工具"}
+            >
+              ★ MY <span className="jx-tab-count">{favCount}</span>
             </button>
             {categoryEntries.map((c) => (
               <button
@@ -416,8 +497,8 @@ export default function App() {
                 role="tab"
                 key={c.name}
                 className="jx-tab"
-                data-active={categoryId === c.name}
-                onClick={() => setCategoryId(c.name)}
+                data-active={!myView && categoryId === c.name}
+                onClick={() => selectCategory(c.name)}
               >
                 {c.name} <span className="jx-tab-count">{c.count}</span>
               </button>
@@ -444,7 +525,11 @@ export default function App() {
 
         {filtered.length === 0 ? (
           <div className="jx-empty">
-            {searchQuery.trim() ? (
+            {myView ? (
+              <p>
+                MY 视图为空 · 在任意工具卡右上角点 <mark>MARK</mark> 即可加入「在用 / 想用」
+              </p>
+            ) : searchQuery.trim() ? (
               <p>
                 NO MATCH FOR <mark>{searchQuery.trim()}</mark> IN /{activeCategoryLabel} ·
                 {" "}试试切换到「全部」或清空搜索
@@ -479,6 +564,8 @@ export default function App() {
                         index={idx}
                         showIndex={showIndex}
                         showCategoryMeta={false}
+                        favStatus={getFavStatus(tool.url)}
+                        onToggleFav={cycleFav}
                       />
                     );
                   })}
@@ -495,6 +582,8 @@ export default function App() {
                 index={index}
                 showIndex={showIndex}
                 showCategoryMeta={false}
+                favStatus={getFavStatus(tool.url)}
+                onToggleFav={cycleFav}
               />
             ))}
           </div>
