@@ -19,6 +19,9 @@ jobs:
       - run: npm run build
       - uses: cloudflare/wrangler-action@v3
         with:
+          # Wrangler 4 truncates Pages commit metadata at UTF-8 boundaries (Cloudflare API ~384B cap).
+          # Long multiline CJK commit bodies otherwise fail with: Invalid commit message [code: 8000111].
+          wranglerVersion: "4"
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist --project-name=awesome-ai-tools --branch=main
