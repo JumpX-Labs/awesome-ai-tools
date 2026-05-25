@@ -18,6 +18,7 @@
 - [ChatGPT 图像 · GPT Image 2](https://openai.com/index/new-chatgpt-images-is-here/) - ChatGPT 内置生图与编辑；API 模型与参数以 OpenAI 开发者文档「Image generation」章节为准
 - [Seedance](https://seed.bytedance.com/zh/seedance) - 字节 Seed 视频生成线，含 Seedance 2.0 等；在即梦、豆包、火山方舟等落地
 - [Seedream](https://seed.bytedance.com/zh/seedream4_0) - 字节 Seed 图像生成与编辑线（多参考图、高分辨率等；具体版本以官网为准）
+- [LandscapioAI](https://www.landscapioai.com/) - AI 景观设计与户外空间可视化工具，可从文字或参考图生成庭院、花园和露台设计概念图
 - [即梦](https://jimeng.jianying.com/) - 字节系 AI 创作入口，集成 Seedance / Seedream 等能力（入口以官网为准）
 - [可灵 AI](https://klingai.com/) - 快手系 AI 视频与图像，常与字节 Seed 线对照使用
 - [HappyHourse](https://happyhourse.ai/) - 文生视频、图生视频、图像与参考素材、同步音轨等一站式（Happy Horse 1.0；官网品牌拼写为 HappyHourse）
