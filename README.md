@@ -15,6 +15,7 @@
 - [Perplexity](https://www.perplexity.ai/) - AI 搜索与引用式问答，研究与信息检索
 
 ## AI 多模态
+- [AIImageChanger.app](https://aiimagechanger.app/) - 浏览器端 AI 图片编辑器：用自然语言提示修改背景、物体、服装、颜色、文字与风格，保留不应改变的细节；支持多模型与多图融合
 - [ChatGPT 图像 · GPT Image 2](https://openai.com/index/new-chatgpt-images-is-here/) - ChatGPT 内置生图与编辑；API 模型与参数以 OpenAI 开发者文档「Image generation」章节为准
 - [Seedance](https://seed.bytedance.com/zh/seedance) - 字节 Seed 视频生成线，含 Seedance 2.0 等；在即梦、豆包、火山方舟等落地
 - [Seedream](https://seed.bytedance.com/zh/seedream4_0) - 字节 Seed 图像生成与编辑线（多参考图、高分辨率等；具体版本以官网为准）
