@@ -27,6 +27,7 @@
 ## AI 辅助编程
 - [OpenAI Codex](https://openai.com/codex) - OpenAI 任务级编程代理
 - [Claude Code](https://code.claude.com/docs) - Anthropic 终端内 AI 编程代理
+- [Agent QA](https://github.com/vostride/agent-qa) - 源码可用的应用 QA 工具，可用自然语言定义、校验、运行和分析 Web/移动端测试；模型、浏览器或设备服务可能另行收费
 - [Aider](https://aider.chat/) - 开源终端结对编程，强 Git 集成，多模型
 - [OpenCode · Crush](https://github.com/charmbracelet/crush) - 开源终端 AI Agent，多模型 TUI（原 OpenCode，现 Charm 维护）
 - [Cursor](https://www.cursor.com/) - AI 原生代码编辑器
